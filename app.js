@@ -15,13 +15,22 @@ const client = new MongoClient(uri, {
         version: ServerApiVersion.v1,
         strict: true,
         deprecationErrors: true,
-    }
+    },
+    tls: false
 });
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 
+
+
 db.connectToDatabase();
+
+process.on('exit', async () => {
+    console.log('Exiting application');
+    await db.closeDatabaseConnection();
+});
+
 
 
 

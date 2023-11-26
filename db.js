@@ -15,6 +15,14 @@ async function connectToDatabase() {
         console.error('Error connecting to the database:', error);
     }
 }
+async function closeDatabaseConnection() {
+    try {
+        await client.close();
+        console.log('Connection to the database closed');
+    } catch (error) {
+        console.error('Error closing the database connection:', error);
+    }
+}
 
 async function createUser(username, password, firstname, lastname, number, role) {
     try {
@@ -64,5 +72,6 @@ async function authenticateUser(username, password) {
 module.exports = {
     connectToDatabase,
     createUser,
-    authenticateUser
+    authenticateUser,
+    closeDatabaseConnection
 };
