@@ -3,12 +3,8 @@ const uri = "mongodb+srv://ArukAdmin:s6AmyxKy4QHzhCKm@arukcluster.v7i9lzc.mongod
 const bcrypt = require('bcrypt');
 
 const client = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    },
-    tls: false
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 });
 
 async function connectToDatabase() {
