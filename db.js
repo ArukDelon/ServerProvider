@@ -1,10 +1,14 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ServerApiVersion} = require('mongodb');
 const uri = "mongodb+srv://ArukAdmin:s6AmyxKy4QHzhCKm@arukcluster.v7i9lzc.mongodb.net/?retryWrites=true&w=majority";
 const bcrypt = require('bcrypt');
 
 const client = new MongoClient(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    },
+    tls: false
 });
 
 async function connectToDatabase() {
