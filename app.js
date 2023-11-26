@@ -9,15 +9,7 @@ const authRoutes = require('./routes/users');
 const dataRoutes = require('./routes/dataRoutes')
 const bodyParser = require("body-parser");
 
-const uri = "mongodb+srv://ArukAdmin:s6AmyxKy4QHzhCKm@arukcluster.v7i9lzc.mongodb.net/?retryWrites=true&w=majority";
-const client = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    },
-    tls: false
-});
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
@@ -25,12 +17,6 @@ app.use(express.json());
 
 
 db.connectToDatabase();
-
-process.on('exit', async () => {
-    console.log('Exiting application');
-    await db.closeDatabaseConnection();
-});
-
 
 
 
