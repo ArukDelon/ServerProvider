@@ -2,19 +2,12 @@ const express = require('express');
 const router = express.Router();
 
 const authenticate = require('../middleware/authMiddleware');
-const userController = require("../controllers/userController");
+const dataController = require("../controllers/dataController");
 
 router.use(authenticate);
 
-// Загальний маршрут для отримання даних
-router.get('/', (req, res) => {
-    // Отримати дані з бази даних або іншого джерела
-    // і відправити їх клієнту
-    res.json({ message: 'Отримано дані' });
-});
-
-router.get('/check-token', authenticate, userController.checkToken);
-
+router.get('/check-token', authenticate, dataController.checkToken);
+router.post('/updateUser', authenticate, dataController.updateUser);
 
 
 module.exports = router;

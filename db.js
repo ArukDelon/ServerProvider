@@ -24,11 +24,60 @@ async function closeDatabaseConnection() {
     }
 }
 
+async function getUserByUsername(username) {
+    try {
+        const collection = client.db("CRMProvider").collection("users");
+        const user = await collection.findOne({ username });
+        return user;
+    } catch (error) {
+        console.error('Error getting user by username:', error);
+        throw error;
+    }
+}
+
+async function updateUser(username, updatedData) {
+    try {
+        const collection = client.db("CRMProvider").collection("users");
+
+        // Перевіряємо, чи існує користувач з вказаним ім'ям
+        const existingUser = await collection.findOne({ username });
+        if (!existingUser) {
+            throw new Error(`User with username ${username} not found`);
+        }
+
+        // Оновлюємо дані користувача
+        const result = await collection.updateOne(
+            { username },
+            { $set: updatedData }
+        );
+
+        if (result.modifiedCount > 0) {
+            console.log(`User ${username} updated successfully`);
+            const logsCollection = client.db("CRMProvider").collection('logs');
+            await logsCollection.insertOne({
+                event: 'UpdateUser',
+                username,
+                status: 'success',
+                timestamp: new Date(),
+            });
+        } else {
+            console.log(`User ${username} not updated, data may be the same`);
+        }
+    } catch (error) {
+        console.error('Error updating user:', error);
+        throw error;
+    }
+}
+
 async function createUser(username, password, firstname, lastname, number, role) {
     try {
         const collection = client.db("CRMProvider").collection("users");
         const hashedPassword = await bcrypt.hash(password, 10); // "10" - кількість раундів для хешування
 
+        const existingUser = await collection.findOne({ username });
+        if (existingUser) {
+            throw new Error(`User with username ${username} already exists`);
+        }
         const result = await collection.insertOne({
             username,
             password: hashedPassword,
@@ -42,7 +91,10 @@ async function createUser(username, password, firstname, lastname, number, role)
         console.error('Error creating user:', error);
         throw error; // Пропагуємо помилку на рівень вище
     }
+
 }
+
+
 
 async function authenticateUser(username, password) {
     try {
@@ -54,14 +106,25 @@ async function authenticateUser(username, password) {
 
             if (passwordMatch) {
                 console.log(`User ${username} authenticated`);
+                if(user.role === 'admin')
+                {
+                    const logsCollection = client.db("CRMProvider").collection('logs');
+                    await logsCollection.insertOne({
+                        event: 'authentication',
+                        username,
+                        status: 'success',
+                        timestamp: new Date(),
+                    });
+                }
+
                 return user;
             } else {
                 console.log(`Authentication failed for user ${username}: Invalid password`);
-                return null;
+                throw new Error('Invalid password');
             }
         } else {
             console.log(`Authentication failed for user ${username}: User not found`);
-            return null;
+            throw new Error('User not found');
         }
     } catch (error) {
         console.error('Error authenticating user:', error);
@@ -72,6 +135,8 @@ async function authenticateUser(username, password) {
 module.exports = {
     connectToDatabase,
     createUser,
+    updateUser,
     authenticateUser,
+    getUserByUsername,
     closeDatabaseConnection
 };

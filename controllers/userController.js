@@ -22,7 +22,7 @@ exports.authenticateUser = async (req, res) => {
         const user = await db.authenticateUser(username, password);
 
         if (user) {
-            const token = jwt.sign({ username: user.username, role: user.role }, config.jwtSecret, { expiresIn: '1h' });
+            const token = generateToken(user);
             const userData = {
                 token,
                 userId: user._id,
@@ -31,23 +31,31 @@ exports.authenticateUser = async (req, res) => {
                 lastname: user.lastname,
                 number: user.number,
                 role: user.role
-                // Додайте інші поля користувача, які вам потрібні
             };
             res.json(userData);
         } else {
             res.status(401).json({ message: 'Невірні дані аутентифікації' });
         }
     } catch (error) {
-        console.error('Помилка аутентифікації користувача:', error);
+        if(error.message === 'Invalid password')
+        {
+            console.error('Помилка аутентифікації користувача:', error.message);
+            res.status(401).json({ message: 'Невірний пароль' });
+            return;
+        }
+        if(error.message === 'User not found')
+        {
+            console.error('Помилка аутентифікації користувача:', error.message);
+            res.status(404).json({ message: 'Користувача з таким ім\'ям не знайдено' });
+            return;
+        }
         res.status(500).json({ message: 'Помилка сервера при аутентифікації користувача' });
     }
 };
 
-exports.checkToken = async (req, res) => {
-    try {
-        res.json({ user: req.user });
-    } catch (error) {
-        console.error('Помилка перевірки токена:', error);
-        res.status(500).json({ message: 'Помилка сервера при перевірці токена' });
-    }
+const generateToken = (user) => {
+    const tokenPayload = { username: user.username, role: user.role };
+    const expiresIn = '24h'; // токен буде дійсний 24 годину
+    const token = jwt.sign(tokenPayload, config.jwtSecret, { expiresIn});
+    return token;
 };
