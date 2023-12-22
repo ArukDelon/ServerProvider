@@ -6,8 +6,8 @@ const config = require('../config/config');
 exports.createUser = async (req, res) => {
     try {
         console.log(req.body);
-        const { username, password, firstname, lastname, number, role } = req.body;
-        await db.createUser(username, password, firstname, lastname, number, role);
+        const { username, password, firstname, lastname, number, role, email, address } = req.body;
+        await db.createUser(username, password, firstname, lastname, number, role, email, address);
 
         res.status(201).json({ message: 'Користувач зареєстрований успішно' });
     } catch (error) {
@@ -34,13 +34,13 @@ exports.authenticateUser = async (req, res) => {
             };
             res.json(userData);
         } else {
-            res.status(401).json({ message: 'Невірні дані аутентифікації' });
+            res.status(401).json({ message: 'Неправильні дані аутентифікації' });
         }
     } catch (error) {
         if(error.message === 'Invalid password')
         {
             console.error('Помилка аутентифікації користувача:', error.message);
-            res.status(401).json({ message: 'Невірний пароль' });
+            res.status(401).json({ message: 'Неправильний пароль' });
             return;
         }
         if(error.message === 'User not found')
